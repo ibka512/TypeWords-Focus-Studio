@@ -573,49 +573,49 @@ function disable360() {
       <div class="flex flex-1 overflow-hidden gap-4">
         <div class="left">
           <div class="tabs">
-            <div class="tab" :class="tabIndex === 0 && 'active'" @click="tabIndex = 0">
+            <button type="button" class="tab" :class="tabIndex === 0 && 'active'" @click="tabIndex = 0">
               <IconFluentSettings20Regular />
               <span>{{ $t('general_settings') }}</span>
-            </div>
-            <div class="tab" :class="tabIndex === 1 && 'active'" @click="tabIndex = 1">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 1 && 'active'" @click="tabIndex = 1">
               <IconFluentBot20Regular />
               <span>{{ $t('fsrs_settings') }}</span>
-            </div>
-            <div class="tab" :class="tabIndex === 2 && 'active'" @click="tabIndex = 2">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 2 && 'active'" @click="tabIndex = 2">
               <IconFluentTextUnderlineDouble20Regular />
               <span>{{ $t('word_settings') }}</span>
-            </div>
-            <div class="tab" :class="tabIndex === 3 && 'active'" @click="tabIndex = 3">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 3 && 'active'" @click="tabIndex = 3">
               <IconFluentBookLetter20Regular />
               <span>{{ $t('article_settings') }}</span>
-            </div>
-            <div class="tab" :class="tabIndex === 4 && 'active'" @click="tabIndex = 4">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 4 && 'active'" @click="tabIndex = 4">
               <IconClarityVolumeUpLine />
               <span>{{ $t('sound_settings') }}</span>
-            </div>
-            <div class="tab" :class="tabIndex === 5 && 'active'" @click="tabIndex = 5">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 5 && 'active'" @click="tabIndex = 5">
               <IconFluentDatabasePerson20Regular />
               <span>{{ $t('data_management') }}</span>
-            </div>
+            </button>
 
-            <div class="tab" :class="tabIndex === 6 && 'active'" @click="tabIndex = 6">
+            <button type="button" class="tab" :class="tabIndex === 6 && 'active'" @click="tabIndex = 6">
               <IconFluentCloudSync20Regular />
               <span>{{ $t('data_sync') }}</span>
               <div class="red-point" v-if="runtimeStore.isError"></div>
-            </div>
-            <div class="tab" :class="tabIndex === 7 && 'active'" @click="tabIndex = 7">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 7 && 'active'" @click="tabIndex = 7">
               <IconFluentKeyboardLayoutFloat20Regular />
               <span>{{ $t('shortcut_settings') }}</span>
-            </div>
-            <div class="tab" :class="tabIndex === 8 && 'active'" @click="tabIndex = 8">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 8 && 'active'" @click="tabIndex = 8">
               <IconFluentTextBulletListSquare20Regular />
               <span>{{ $t('update_log') }}</span>
               <!--              <div class="red-point" v-if="runtimeStore.isNew"></div>-->
-            </div>
-            <div class="tab" :class="tabIndex === 9 && 'active'" @click="tabIndex = 9">
+            </button>
+            <button type="button" class="tab" :class="tabIndex === 9 && 'active'" @click="tabIndex = 9">
               <IconFluentPerson20Regular />
               <span>{{ $t('about') }}</span>
-            </div>
+            </button>
           </div>
         </div>
         <div class="col-line"></div>
@@ -842,45 +842,65 @@ function disable360() {
 
 <style scoped lang="scss">
 .col-line {
-  border-right: 2px solid var(--color-line);
+  border-right: 1px solid var(--focus-border);
 }
 
 .setting {
+  min-height: calc(100vh - 8rem);
+  border-radius: var(--focus-radius-lg);
+
+  > .page-title {
+    margin-bottom: 1rem;
+    text-align: left !important;
+  }
+
   .left {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
 
     .tabs {
-      padding: 0.6rem 0;
+      padding: 0;
       display: flex;
       flex-direction: column;
       gap: 0.6rem;
 
       .tab {
         @apply cursor-pointer flex items-center relative;
-        border-radius: 0.5rem;
-        @apply w-auto p-1 lg:w-40 lg:p-2;
+        min-height: 2.75rem;
+        border: 0;
+        border-radius: 0.75rem;
+        color: var(--focus-ink-secondary);
+        background: transparent;
+        font: inherit;
+        text-align: left;
+        @apply w-auto p-2 lg:w-44;
         gap: 0.6rem;
-        transition: all 0.5s;
+        transition:
+          color var(--focus-duration) var(--focus-ease),
+          background-color var(--focus-duration) var(--focus-ease);
 
         svg {
           @apply text-lg shrink-0;
         }
 
         &:hover {
-          background: var(--color-fourth);
+          color: var(--focus-ink);
+          background: var(--focus-surface-strong);
         }
 
         &.active {
-          background: var(--color-fourth);
+          color: var(--focus-accent);
+          background: var(--focus-accent-soft);
         }
       }
     }
   }
 
   .content {
+    padding-left: 0.5rem;
+
     .row {
       min-height: 2.6rem;
       display: flex;
@@ -910,8 +930,8 @@ function disable360() {
             height: 1.8rem;
             outline: none;
             font-size: 1rem;
-            border: 1px solid gray;
-            border-radius: 0.2rem;
+            border: 1px solid var(--focus-border-strong);
+            border-radius: var(--focus-radius-sm);
             padding: 0 0.3rem;
             background: var(--color-second);
             color: var(--color-font-1);
@@ -947,7 +967,44 @@ function disable360() {
     }
 
     .line {
-      border-bottom: 1px solid #c4c3c3;
+      border-bottom: 1px solid var(--focus-border);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .setting {
+    height: auto !important;
+    min-height: calc(100vh - 7rem);
+
+    > .flex {
+      flex-direction: column;
+      overflow: visible;
+    }
+
+    .left {
+      overflow-x: auto;
+
+      .tabs {
+        flex-direction: row;
+        padding-bottom: 0.5rem;
+
+        .tab {
+          width: auto;
+          flex: 0 0 auto;
+          white-space: nowrap;
+        }
+      }
+    }
+
+    .col-line {
+      border-right: 0;
+      border-bottom: 1px solid var(--focus-border);
+    }
+
+    .content {
+      padding: 0;
+      overflow: visible;
     }
   }
 }

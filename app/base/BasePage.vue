@@ -3,36 +3,42 @@
 </script>
 
 <template>
-  <div class="flex justify-center">
-    <div class="page 3xl:w-[50vw] 2xl:w-[60vw] xl:w-[70vw] lg:w-[75vw]">
+  <div class="focus-page-shell">
+    <div class="page">
       <slot></slot>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+.focus-page-shell {
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 2rem;
+}
+
 .page {
-  min-height: calc(100vh - 1.2rem);
-  margin-top: 1.2rem;
+  width: min(100%, 76rem);
+  min-height: calc(100vh - 8.75rem);
 }
 
 
 @media (max-width: 768px) {
   .page {
-    width: 100vw !important;
-    margin-top: 0.5rem;
-    min-height: calc(100vh - 0.5rem);
-    padding: 0 0.5rem;
-    box-sizing: border-box;
+    width: 100%;
+    min-height: calc(100vh - 6rem);
+  }
+
+  .focus-page-shell {
+    padding: 1rem 0.75rem;
   }
 }
 
 // 超小屏幕适配
 @media (max-width: 480px) {
-  .page {
-    margin-top: 0.3rem;
-    min-height: calc(100vh - 0.3rem);
-    padding: 0 0.3rem;
+  .focus-page-shell {
+    padding-inline: 0.625rem;
   }
 }
 </style>

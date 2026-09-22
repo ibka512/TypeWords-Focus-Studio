@@ -23,6 +23,14 @@
   <b>Learn English, one keystroke at a time; smarter memorization, more efficient learning - an open-source word and article practice tool</b>
 </p>
 
+## Focus Studio Edition / 专注学习舱
+
+This repository is a UI-focused edition of [zyronon/TypeWords](https://github.com/zyronon/TypeWords). It preserves the original learning engine, local data model, routes, and GPL-3.0 license while introducing a calmer Focus Studio interface for word practice, article reading, settings, mobile navigation, and dark mode.
+
+本仓库是基于 [zyronon/TypeWords](https://github.com/zyronon/TypeWords) 制作的“专注学习舱”界面版本。它保留原项目的学习算法、本地数据结构、路由与 GPL-3.0 许可证，主要重新设计了单词训练、文章阅读、设置、移动端导航和深色模式体验。
+
+Design decisions and protected compatibility contracts are documented in [`brand-spec.md`](./brand-spec.md) and [`design-system/typewords-focus-studio/MASTER.md`](./design-system/typewords-focus-studio/MASTER.md).
+
 ## Project Introduction
 
 <https://www.bilibili.com/video/BV1QwYv6eEAS>
@@ -107,4 +115,3 @@ Of course, sponsorship is not required for use—sharing the project, submitting
 
 <img width="300" height="390" alt="practice words" src="/public/imgs/zhifubao.png" />
 <img width="300" height="390" alt="practice words" src="/public/imgs/weixin.png" />
-

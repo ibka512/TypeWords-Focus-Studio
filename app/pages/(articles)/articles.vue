@@ -210,7 +210,14 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
 
 <template>
   <BasePage>
-    <div class="card flex flex-col md:flex-row justify-between gap-space p-4 md:p-6">
+    <div class="focus-articles">
+      <header class="focus-articles__header">
+        <p>DEEP READING</p>
+        <h1>专注阅读</h1>
+        <span>按自己的节奏读完一篇，再继续下一篇。</span>
+      </header>
+
+    <div class="card focus-article-task flex flex-col md:flex-row justify-between gap-space p-4 md:p-6">
       <div class="">
         <Book
           v-if="base.sbook.id"
@@ -228,8 +235,8 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
             <div class="title mr-4 truncate">{{ $t('this_week_record') }}</div>
             <div class="flex gap-4 color-gray">
               <div
-                class="w-6 h-6 md:w-8 md:h-8 rounded-md center text-sm md:text-base"
-                :class="item ? 'bg-[#409eff] color-white' : 'bg-gray-200'"
+                class="focus-reading-day w-6 h-6 md:w-8 md:h-8 rounded-md center text-sm md:text-base"
+                :class="{ 'is-complete': item }"
                 v-for="(item, i) in weekList"
                 :key="i"
               >
@@ -242,22 +249,16 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
           </div>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 items-center mt-3 gap-space w-full">
-          <div
-            class="w-full sm:flex-1 rounded-xl p-4 box-border relative bg-[var(--bg-history)] border border-gray-200"
-          >
-            <div class="text-[#409eff] text-xl font-bold">{{ todayTotalSpend }}</div>
+          <div class="focus-article-stat w-full sm:flex-1 rounded-xl p-4 box-border relative">
+            <div class="focus-article-stat__value text-xl font-bold">{{ todayTotalSpend }}</div>
             <div class="text-gray-500">{{ $t('today_study_time') }}</div>
           </div>
-          <div
-            class="w-full sm:flex-1 rounded-xl p-4 box-border relative bg-[var(--bg-history)] border border-gray-200"
-          >
-            <div class="text-[#409eff] text-xl font-bold">{{ totalDay }}</div>
+          <div class="focus-article-stat w-full sm:flex-1 rounded-xl p-4 box-border relative">
+            <div class="focus-article-stat__value text-xl font-bold">{{ totalDay }}</div>
             <div class="text-gray-500">{{ $t('total_study_days') }}</div>
           </div>
-          <div
-            class="w-full sm:flex-1 rounded-xl p-4 box-border relative bg-[var(--bg-history)] border border-gray-200"
-          >
-            <div class="text-[#409eff] text-xl font-bold">{{ totalSpend }}</div>
+          <div class="focus-article-stat w-full sm:flex-1 rounded-xl p-4 box-border relative">
+            <div class="focus-article-stat__value text-xl font-bold">{{ totalSpend }}</div>
             <div class="text-gray-500">{{ $t('total_study_time') }}</div>
           </div>
         </div>
@@ -280,7 +281,7 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
       </div>
     </div>
 
-    <div class="card flex flex-col">
+    <div class="card focus-article-library flex flex-col">
       <div class="flex justify-between">
         <div class="title">{{ $t('my_books') }}</div>
         <div class="flex gap-4 items-center">
@@ -323,7 +324,7 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
       </div>
     </div>
 
-    <div class="card flex flex-col min-h-50" v-loading="isFetching">
+    <div class="card focus-article-library flex flex-col min-h-50" v-loading="isFetching">
       <div class="flex justify-between">
         <div class="title">{{ $t('recommend') }}</div>
         <div class="flex gap-4 items-center">
@@ -341,16 +342,77 @@ const { data: recommendBookList, isFetching } = useFetch(resourceWrap(DICT_LIST.
         />
       </div>
     </div>
+    </div>
   </BasePage>
 </template>
 
 <style scoped lang="scss">
+.focus-articles {
+  padding-bottom: 3rem;
+
+  &__header {
+    margin-bottom: 1.5rem;
+
+    p {
+      margin: 0;
+      color: var(--focus-accent);
+      font-size: 0.6875rem;
+      font-weight: 760;
+      letter-spacing: 0.14em;
+    }
+
+    h1 {
+      margin: 0.125rem 0 0;
+      color: var(--focus-ink);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 760;
+      letter-spacing: -0.055em;
+      line-height: 1.05;
+    }
+
+    span {
+      display: block;
+      margin-top: 0.75rem;
+      color: var(--focus-ink-secondary);
+    }
+  }
+}
+
+.focus-article-task {
+  border-radius: var(--focus-radius-lg);
+}
+
+.focus-reading-day {
+  color: var(--focus-ink-secondary);
+  background: var(--focus-surface-strong);
+
+  &.is-complete {
+    color: white;
+    background: var(--focus-success);
+  }
+}
+
+.focus-article-stat {
+  border: 1px solid var(--focus-border);
+  color: var(--focus-ink-secondary);
+  background: var(--focus-surface-raised);
+
+  &__value {
+    color: var(--focus-accent);
+  }
+}
+
+.focus-article-library {
+  margin-top: 1.5rem;
+}
+
 .stat {
   @apply rounded-xl p-4 box-border relative flex-1 bg-[var(--bg-history)];
-  border: 1px solid gainsboro;
+  border: 1px solid var(--focus-border);
 
   .num {
-    @apply color-[#409eff] text-xl font-bold;
+    color: var(--focus-accent);
+    @apply text-xl font-bold;
   }
 
   .txt {

@@ -48,12 +48,23 @@ function handleClick(e: MouseEvent) {
 </script>
 
 <template>
-  <div style="width: var(--book-width)" :id="`dict-${item?.id}`" v-if="!isAdd" @click="handleClick">
+  <div
+    class="book-item"
+    style="width: var(--book-width)"
+    :id="`dict-${item?.id}`"
+    v-if="!isAdd"
+    role="button"
+    tabindex="0"
+    :aria-label="`${item?.name || ''} ${studyProgress || ''}${item?.length || 0}${quantifier || ''}`"
+    @click="handleClick"
+    @keydown.enter="handleClick"
+    @keydown.space.prevent="handleClick"
+  >
     <div
       class="book overflow-hidden relative"
       :class="[showCheckbox && 'book-selectable', (selected || checked) && 'book-selected']"
     >
-      <img class="absolute top-0 left-0 w-full object-cover" v-if="item?.cover" :src="coverSrc" alt="" />
+      <img class="absolute top-0 left-0 w-full object-cover" v-if="item?.cover" :src="coverSrc" :alt="item?.name" />
       <div class="text-base mt-1" v-else>{{ item?.name }}</div>
       <div class="absolute bottom-4 right-3 z-1" v-if="!item?.cover">
         <div>{{ studyProgress }}{{ item?.length }}{{ quantifier }}</div>
@@ -82,7 +93,17 @@ function handleClick(e: MouseEvent) {
       <div>{{ studyProgress }}{{ item?.length }}{{ quantifier }}</div>
     </div>
   </div>
-  <div v-else class="book" id="no-book" @click="handleClick">
+  <div
+    v-else
+    class="book book-add"
+    id="no-book"
+    role="button"
+    tabindex="0"
+    :aria-label="$t('select_dict')"
+    @click="handleClick"
+    @keydown.enter="handleClick"
+    @keydown.space.prevent="handleClick"
+  >
     <div class="h-full center text-2xl">
       <IconFluentAdd16Regular />
     </div>
@@ -90,6 +111,26 @@ function handleClick(e: MouseEvent) {
 </template>
 
 <style scoped lang="scss">
+.book-item,
+.book-add {
+  outline: none;
+}
+
+.book-item:focus-visible .book,
+.book-add:focus-visible {
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.book-item > .flex {
+  color: var(--focus-ink-secondary);
+  font-size: 0.8125rem;
+}
+
+.book-add {
+  border-style: dashed;
+  color: var(--focus-ink-tertiary);
+}
+
 .book-selectable {
   &:hover {
     border-color: var(--color-input-border);
@@ -106,7 +147,7 @@ function handleClick(e: MouseEvent) {
   top: 4px;
   right: -22px;
   padding: 1px 20px;
-  background: #409eff;
+  background: var(--focus-accent);
   color: white;
   font-size: 11px;
   transform: rotate(45deg);
@@ -119,7 +160,7 @@ function handleClick(e: MouseEvent) {
   border-radius: 8px;
   padding: 2px 8px;
   // background: var(--color-link);
-  background: #409eff;
+  background: var(--focus-success);
   color: white;
   font-size: 11px;
 }

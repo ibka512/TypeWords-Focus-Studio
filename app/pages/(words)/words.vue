@@ -560,302 +560,238 @@ onUnmounted(() => {
 
 <template>
   <BasePage>
-    <div class="my-100 text-4xl font-bold text-red" v-if="isOldHost">
-      已启用新域名
-      <a class="mr-4" :href="`${Origin}/words?from_old_site=1`">{{ Origin }}</a
-      >当前 2study.top 域名将在 7 月 3 号停止使用
-    </div>
-
-    <div class="card flex flex-col md:flex-row gap-4">
-      <div class="flex-1 flex flex-col justify-between">
-        <div class="flex gap-3">
-          <div class="p-1 center rounded-full bg-white">
-            <IconFluentBookNumber20Filled class="text-xl color-link" />
-          </div>
-          <div @click="goDictDetail(store.sdict)" class="text-2xl font-bold cursor-pointer">
-            {{ store.sdict.name || $t('no_dict_selected') }}
-          </div>
-        </div>
-
-        <template v-if="store.sdict.id">
-          <div class="mt-4 space-y-2">
-            <div class="text-sm flex justify-between">
-              <span v-opacity="store.sdict.id && store.sdict.lastLearnIndex < store.sdict.length">
-                {{ $t('estimated_completion') }}：{{
-                  _getAccomplishDate(
-                    store.sdict.words.length - store.sdict.lastLearnIndex,
-                    store.sdict.perDayStudyNumber
-                  )
-                }}
-              </span>
-            </div>
-            <Progress size="large" :percentage="store.currentStudyProgress" :show-text="false"></Progress>
-
-            <div class="text-sm flex justify-between">
-              <span>{{ progressTextLeft }}</span>
-              <span> {{ store.sdict?.lastLearnIndex }} / {{ store.sdict.length }} 词</span>
-            </div>
-          </div>
-          <div class="flex items-center mt-4 gap-4">
-            <BaseButton type="info" size="small" @click="router.push('/dict-list')">
-              <div class="center gap-1">
-                <IconFluentArrowSwap20Regular />
-                <span>{{ $t('select_dict') }}</span>
-              </div>
-            </BaseButton>
-            <PopConfirm
-              :disabled="!isSaveData"
-              title="当前存在未完成的学习任务，修改会重新生成学习任务，是否继续？"
-              @confirm="check(() => (showChangeLastPracticeIndexDialog = true))"
-            >
-              <BaseButton type="info" size="small" v-if="store.sdict.id">
-                <div class="center gap-1">
-                  <IconFluentSlideTextTitleEdit20Regular />
-                  <span>{{ $t('change_progress') }}</span>
-                </div>
-              </BaseButton>
-            </PopConfirm>
-          </div>
-        </template>
-
-        <div class="flex items-center gap-4 mt-2 flex-1" v-else>
-          <div class="title">{{ $t('select_dict_to_start') }}</div>
-          <BaseButton id="step1" type="primary" size="large" @click="router.push('/dict-list')">
-            <div class="center gap-1">
-              <IconFluentAdd16Regular />
-              <span>{{ $t('select_dict') }}</span>
-            </div>
-          </BaseButton>
-        </div>
+    <div class="focus-dashboard">
+      <div class="focus-old-host" v-if="isOldHost">
+        已启用新域名：<a :href="`${Origin}/words?from_old_site=1`">{{ Origin }}</a>
       </div>
-      <div class="flex-1 mt-4 md:mt-0" :class="!store.sdict.id && 'opacity-30 cursor-not-allowed'">
-        <div class="flex justify-between">
-          <div class="flex items-center gap-2">
-            <div class="p-2 center rounded-full bg-white">
-              <IconFluentStar20Filled class="text-lg color-amber" />
-            </div>
-            <div class="text-xl font-bold">
-              {{ isSaveData ? $t('last_task') : $t('today_task') }}
-            </div>
-            <span class="color-link cursor-pointer" v-if="store.sdict.id" @click="showPracticeWordListDialog = true">{{
-              $t('word_list')
-            }}</span>
-            <!--            <span class="color-link cursor-pointer ml-2" @click="nav('/practice-flow-editor', {})">流程编排</span>-->
+
+      <header class="focus-dashboard__header">
+        <div>
+          <p class="focus-dashboard__eyebrow">DAILY PRACTICE</p>
+          <h1>{{ isSaveData ? $t('continue_learning') : $t('today_task') }}</h1>
+          <p>把今天的任务做完，剩下的交给记忆曲线。</p>
+        </div>
+        <button
+          v-if="store.sdict.id"
+          type="button"
+          class="focus-text-action"
+          @click="showPracticeWordListDialog = true"
+        >
+          {{ $t('word_list') }}
+          <IconFluentChevronRight16Regular />
+        </button>
+      </header>
+
+      <section class="focus-task" :class="{ 'is-empty': !store.sdict.id }">
+        <div class="focus-task__context">
+          <div class="focus-task__book-icon">
+            <IconFluentBookNumber20Filled />
           </div>
-          <div class="flex gap-1 items-center" v-if="store.sdict.id">
-            {{ $t('daily_goal') }}
-            <div style="color: #ac6ed1" class="bg-third px-2 h-10 flex center text-2xl rounded">
-              {{ store.sdict.id ? store.sdict.perDayStudyNumber : 0 }}
+          <div class="focus-task__copy">
+            <p class="focus-task__label">{{ $t('words') }}</p>
+            <button type="button" class="focus-task__title" @click="goDictDetail(store.sdict)">
+              {{ store.sdict.name || $t('no_dict_selected') }}
+            </button>
+            <template v-if="store.sdict.id">
+              <p class="focus-task__meta">
+                {{ $t('estimated_completion') }}
+                {{ _getAccomplishDate(store.sdict.words.length - store.sdict.lastLearnIndex, store.sdict.perDayStudyNumber) }}
+              </p>
+              <div class="focus-task__progress">
+                <Progress size="large" :percentage="store.currentStudyProgress" :show-text="false" />
+                <div>
+                  <span>{{ progressTextLeft }}</span>
+                  <span>{{ store.sdict.lastLearnIndex }} / {{ store.sdict.length }} 词</span>
+                </div>
+              </div>
+            </template>
+            <p v-else class="focus-task__meta">{{ $t('select_dict_to_start') }}</p>
+          </div>
+        </div>
+
+        <div v-if="store.sdict.id" class="focus-task__plan">
+          <div class="focus-task__plan-head">
+            <div>
+              <p class="focus-task__label">{{ isSaveData ? $t('last_task') : $t('today_task') }}</p>
+              <p class="focus-task__goal">
+                {{ $t('daily_goal') }} <strong>{{ store.sdict.perDayStudyNumber }}</strong> {{ $t('words_count') }}
+              </p>
             </div>
-            {{ $t('words_count') }}
             <PopConfirm
               :disabled="!isSaveData"
               title="当前存在未完成的学习任务，修改会重新生成学习任务，是否继续？"
               @confirm="check(() => (showPracticeSettingDialog = true))"
             >
-              <BaseButton type="info" size="small">{{ $t('change') }}</BaseButton>
+              <button type="button" class="focus-text-action">{{ $t('change') }}</button>
             </PopConfirm>
           </div>
-        </div>
-        <div class="flex mt-4 justify-between">
-          <div class="stat">
-            <div class="num">{{ practiceData?.taskWords?.new?.length }}</div>
-            <div class="txt">{{ $t('new_words') }}</div>
-          </div>
-          <div class="stat">
-            <div class="num flex center">
-              {{ practiceData?.taskWords?.review?.length }}
-              <span class="text-base color-reverse-black" v-if="!practiceData?.taskWords?.review?.length"
-                >(暂无到期词)</span
-              >
-            </div>
-            <div class="txt flex center gap-1">
-              <span>{{ $t('review') }}</span>
-              <Tooltip>
-                <IconFluentQuestionCircle20Regular class="mt-.5" width="18" />
-                <template #reference>
-                  <div class="whitespace-pre-wrap">{{ reviewWordTip }}</div>
-                </template>
-              </Tooltip>
-            </div>
-            <div class="center gap-2 mt-1 text-sm" v-if="!isSaveData && dueReviewCount === 0">
-              <span>加入随机复习</span>
-              <Switch :model-value="settingStore.autoAddRandomReviewWhenNoDue" @change="toggleAutoAddRandomReview" />
-            </div>
-          </div>
-        </div>
-        <div class="flex items-end mt-4 gap-4 btn-no-margin">
-          <OptionButton
-            :class="settingStore.wordPracticeMode !== WordPracticeMode.Free ? 'flex-1 orange-btn' : 'primary-btn'"
-          >
-            <BaseButton
-              size="large"
-              :type="settingStore.wordPracticeMode !== WordPracticeMode.Free ? 'orange' : 'primary'"
-              :disabled="!store.sdict.id"
-              :loading="loading"
-              @click="systemPractice"
-            >
-              <div class="flex items-center gap-2">
-                <span class="line-height-[2]">{{ systemPracticeText }}</span>
-                <IconFluentArrowCircleRight16Regular class="text-xl" />
-              </div>
-            </BaseButton>
-            <template #options>
-              <BaseButton
-                class="w-full"
-                v-if="
-                  settingStore.wordPracticeMode !== WordPracticeMode.System &&
-                  settingStore.wordPracticeMode !== WordPracticeMode.Free
-                "
-                @click="startPractice(WordPracticeMode.System, true)"
-              >
-                {{ $t('smart_learning') }}
-              </BaseButton>
 
-              <BaseButton
-                class="w-full"
-                v-if="settingStore.wordPracticeMode !== WordPracticeMode.Review"
-                :disabled="!practiceData?.taskWords?.review?.length"
-                @click="startPractice(WordPracticeMode.Review, true)"
-              >
+          <div class="focus-task__counts">
+            <div>
+              <strong>{{ practiceData?.taskWords?.new?.length }}</strong>
+              <span>{{ $t('new_words') }}</span>
+            </div>
+            <div>
+              <strong>{{ practiceData?.taskWords?.review?.length }}</strong>
+              <span class="focus-inline-label">
                 {{ $t('review') }}
-              </BaseButton>
-              <BaseButton
-                class="w-full"
-                v-if="settingStore.wordPracticeMode !== WordPracticeMode.Shuffle"
-                :disabled="store.sdict.lastLearnIndex < 10 && !store.sdict.complete"
-                @click="startPractice(WordPracticeMode.Shuffle, true)"
-              >
-                {{ $t('random_review') }}
-              </BaseButton>
-              <BaseButton
-                class="w-full"
-                v-if="settingStore.wordPracticeMode !== WordPracticeMode.ReviewWordsTest"
-                :disabled="store.sdict.lastLearnIndex < 10 && !store.sdict.complete"
-                @click="startPractice(WordPracticeMode.ReviewWordsTest, true)"
-              >
-                {{ $t('words') }}{{ $t('test') }}
-              </BaseButton>
-              <BaseButton
-                class="w-full"
-                v-if="settingStore.wordPracticeMode !== WordPracticeMode.ShuffleWordsTest"
-                :disabled="store.sdict.lastLearnIndex < 10 && !store.sdict.complete"
-                @click="startPractice(WordPracticeMode.ShuffleWordsTest, true)"
-              >
-                {{ $t('random_words_test') }}
-              </BaseButton>
-            </template>
-          </OptionButton>
-
-          <BaseButton
-            :class="settingStore.wordPracticeMode === WordPracticeMode.Free ? 'flex-1' : ''"
-            :type="settingStore.wordPracticeMode === WordPracticeMode.Free ? 'orange' : 'primary'"
-            size="large"
-            :loading="loading"
-            @click="freePractice()"
-          >
-            <div class="flex items-center gap-2">
-              <span class="line-height-[2]">
-                {{
-                  settingStore.wordPracticeMode === WordPracticeMode.Free && isSaveData
-                    ? $t('continue_free_practice')
-                    : $t('free_practice')
-                }}
+                <Tooltip>
+                  <IconFluentQuestionCircle20Regular width="17" />
+                  <template #reference><div class="whitespace-pre-wrap">{{ reviewWordTip }}</div></template>
+                </Tooltip>
               </span>
-              <IconStreamlineColorPenDrawFlat class="text-xl" />
             </div>
+          </div>
+
+          <div v-if="!isSaveData && dueReviewCount === 0" class="focus-task__random-review">
+            <span>加入随机复习</span>
+            <Switch :model-value="settingStore.autoAddRandomReviewWhenNoDue" @change="toggleAutoAddRandomReview" />
+          </div>
+
+          <div class="focus-task__actions btn-no-margin">
+            <OptionButton class="focus-task__primary">
+              <BaseButton
+                size="large"
+                :type="settingStore.wordPracticeMode !== WordPracticeMode.Free ? 'orange' : 'primary'"
+                :loading="loading"
+                @click="systemPractice"
+              >
+                <span class="focus-button-label">
+                  {{ systemPracticeText }}
+                  <IconFluentArrowRight16Regular />
+                </span>
+              </BaseButton>
+              <template #options>
+                <BaseButton
+                  class="w-full"
+                  v-if="settingStore.wordPracticeMode !== WordPracticeMode.System && settingStore.wordPracticeMode !== WordPracticeMode.Free"
+                  @click="startPractice(WordPracticeMode.System, true)"
+                >{{ $t('smart_learning') }}</BaseButton>
+                <BaseButton
+                  class="w-full"
+                  v-if="settingStore.wordPracticeMode !== WordPracticeMode.Review"
+                  :disabled="!practiceData?.taskWords?.review?.length"
+                  @click="startPractice(WordPracticeMode.Review, true)"
+                >{{ $t('review') }}</BaseButton>
+                <BaseButton
+                  class="w-full"
+                  v-if="settingStore.wordPracticeMode !== WordPracticeMode.Shuffle"
+                  :disabled="store.sdict.lastLearnIndex < 10 && !store.sdict.complete"
+                  @click="startPractice(WordPracticeMode.Shuffle, true)"
+                >{{ $t('random_review') }}</BaseButton>
+                <BaseButton
+                  class="w-full"
+                  v-if="settingStore.wordPracticeMode !== WordPracticeMode.ReviewWordsTest"
+                  :disabled="store.sdict.lastLearnIndex < 10 && !store.sdict.complete"
+                  @click="startPractice(WordPracticeMode.ReviewWordsTest, true)"
+                >{{ $t('words') }}{{ $t('test') }}</BaseButton>
+                <BaseButton
+                  class="w-full"
+                  v-if="settingStore.wordPracticeMode !== WordPracticeMode.ShuffleWordsTest"
+                  :disabled="store.sdict.lastLearnIndex < 10 && !store.sdict.complete"
+                  @click="startPractice(WordPracticeMode.ShuffleWordsTest, true)"
+                >{{ $t('random_words_test') }}</BaseButton>
+              </template>
+            </OptionButton>
+
+            <BaseButton type="info" size="large" :loading="loading" @click="freePractice()">
+              <span class="focus-button-label">
+                {{ settingStore.wordPracticeMode === WordPracticeMode.Free && isSaveData ? $t('continue_free_practice') : $t('free_practice') }}
+                <IconFluentPen20Regular />
+              </span>
+            </BaseButton>
+          </div>
+        </div>
+
+        <div v-else class="focus-task__empty-action">
+          <BaseButton id="step1" type="primary" size="large" @click="router.push('/dict-list')">
+            <span class="focus-button-label"><IconFluentAdd16Regular />{{ $t('select_dict') }}</span>
           </BaseButton>
         </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="card flex flex-col md:flex-row gap-4 xl:gap-20 p-4 md:p-6">
-      <div class="flex-1 flex flex-col gap-3 min-w-0">
-        <div class="title">统计</div>
-        <div class="flex gap-3 items-center w-full">
-          <div class="stat2">
-            <div class="num">{{ todayTotalSpend }}</div>
-            <div class="txt">{{ $t('today_study_time') }}</div>
+      <section class="focus-overview" aria-label="学习统计">
+        <div class="focus-overview__metrics">
+          <div class="focus-metric">
+            <span>{{ $t('today_study_time') }}</span>
+            <strong>{{ todayTotalSpend }}</strong>
           </div>
-          <div class="stat2">
-            <div class="num">{{ totalDay }}</div>
-            <div class="txt">{{ $t('total_study_days') }}</div>
+          <div class="focus-metric">
+            <span>{{ $t('total_study_days') }}</span>
+            <strong>{{ totalDay }}</strong>
           </div>
-          <div class="stat2">
-            <div class="num">{{ totalSpend }}</div>
-            <div class="txt">{{ $t('total_study_time') }}</div>
+          <div class="focus-metric">
+            <span>{{ $t('total_study_time') }}</span>
+            <strong>{{ totalSpend }}</strong>
           </div>
         </div>
-      </div>
-      <div class="shrink-0 flex items-center">
-        <Calendar
-          :highlighted-dates="calendarHighlightDates"
-          @select-date="onSelectCalendarDate"
-          :weekHeaderTitle="$t('this_week_record')"
-        >
-        </Calendar>
-      </div>
-    </div>
+        <div class="focus-overview__calendar">
+          <Calendar
+            :highlighted-dates="calendarHighlightDates"
+            @select-date="onSelectCalendarDate"
+            :weekHeaderTitle="$t('this_week_record')"
+          />
+        </div>
+      </section>
 
-    <div class="card flex flex-col">
-      <div class="flex justify-between">
-        <div class="title">{{ $t('my_dictionaries') }}</div>
-        <div class="flex gap-4 items-center">
-          <PopConfirm title="确认删除所有选中词典？" @confirm="handleBatchDel" v-if="selectIds.length">
-            <BaseIcon class="del" :title="$t('delete')">
-              <DeleteIcon />
-            </BaseIcon>
-          </PopConfirm>
-
-          <div
-            class="color-link cursor-pointer"
-            v-if="store.word.bookList.length > 3"
-            @click="
-              () => {
-                isManageDict = !isManageDict
-                selectIds = []
-              }
-            "
-          >
-            {{ isManageDict ? $t('cancel') : $t('manage_dict') }}
+      <section class="focus-library">
+        <div class="focus-section-head">
+          <div>
+            <p class="focus-dashboard__eyebrow">LIBRARY</p>
+            <h2>{{ $t('my_dictionaries') }}</h2>
           </div>
-          <div class="color-link cursor-pointer" @click="nav('/dict', { isAdd: true })">
-            {{ $t('create_personal_dict') }}
+          <div class="focus-section-actions">
+            <PopConfirm title="确认删除所有选中词典？" @confirm="handleBatchDel" v-if="selectIds.length">
+              <BaseIcon class="del" :title="$t('delete')"><DeleteIcon /></BaseIcon>
+            </PopConfirm>
+            <button
+              v-if="store.word.bookList.length > 3"
+              type="button"
+              class="focus-text-action"
+              @click="isManageDict = !isManageDict; selectIds = []"
+            >{{ isManageDict ? $t('cancel') : $t('manage_dict') }}</button>
+            <button type="button" class="focus-text-action" @click="nav('/dict', { isAdd: true })">
+              {{ $t('create_personal_dict') }}
+            </button>
           </div>
         </div>
-      </div>
-      <div class="flex gap-4 flex-wrap mt-4">
-        <Book
-          :is-add="false"
-          quantifier="词"
-          :item="item"
-          :checked="selectIds.includes(item.id)"
-          @check="() => toggleSelect(item)"
-          :show-checkbox="isManageDict && j >= 3"
-          v-for="(item, j) in store.word.bookList"
-          @click="goDictDetail(item)"
-        />
-        <Book :is-add="true" @click="router.push('/dict-list')" />
-      </div>
-    </div>
-
-    <div class="card flex flex-col overflow-hidden" v-loading="isFetching">
-      <div class="flex justify-between">
-        <div class="title">{{ $t('recommend') }}</div>
-        <div class="flex gap-4 items-center">
-          <div class="color-link cursor-pointer" @click="router.push('/dict-list')">{{ $t('more') }}</div>
+        <div class="focus-book-grid">
+          <Book
+            v-for="(item, j) in store.word.bookList"
+            :key="item.id"
+            :is-add="false"
+            quantifier="词"
+            :item="item"
+            :checked="selectIds.includes(item.id)"
+            :show-checkbox="isManageDict && j >= 3"
+            @check="() => toggleSelect(item)"
+            @click="goDictDetail(item)"
+          />
+          <Book :is-add="true" @click="router.push('/dict-list')" />
         </div>
-      </div>
+      </section>
 
-      <div class="flex gap-4 flex-wrap mt-4 min-h-50">
-        <Book
-          :is-add="false"
-          quantifier="词"
-          :item="item as any"
-          v-for="(item, j) in recommendDictList"
-          @click="goDictDetail(item as any)"
-        />
-      </div>
+      <section class="focus-library focus-library--quiet" v-loading="isFetching">
+        <div class="focus-section-head">
+          <div>
+            <p class="focus-dashboard__eyebrow">DISCOVER</p>
+            <h2>{{ $t('recommend') }}</h2>
+          </div>
+          <button type="button" class="focus-text-action" @click="router.push('/dict-list')">
+            {{ $t('more') }} <IconFluentChevronRight16Regular />
+          </button>
+        </div>
+        <div class="focus-book-grid focus-book-grid--recommend">
+          <Book
+            v-for="item in recommendDictList"
+            :key="item.id"
+            :is-add="false"
+            quantifier="词"
+            :item="item as any"
+            @click="goDictDetail(item as any)"
+          />
+        </div>
+      </section>
     </div>
   </BasePage>
 
@@ -908,26 +844,422 @@ onUnmounted(() => {
 </template>
 
 <style scoped lang="scss">
-.stat {
-  @apply w-49% box-border flex flex-col items-center justify-center rounded-xl p-2 bg-[var(--bg-history)];
-  border: 1px solid gainsboro;
+.focus-dashboard {
+  padding-bottom: 3rem;
 
-  .num {
-    @apply color-[#409eff] text-4xl font-bold;
+  &__header,
+  .focus-section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
   }
 
-  .txt {
-    @apply color-gray-500;
+  &__header {
+    margin-bottom: 1.5rem;
+
+    h1 {
+      margin: 0.125rem 0 0;
+      color: var(--focus-ink);
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-weight: 760;
+      letter-spacing: -0.055em;
+      line-height: 1.05;
+    }
+
+    p:last-child {
+      margin: 0.75rem 0 0;
+      color: var(--focus-ink-secondary);
+    }
+  }
+
+  &__eyebrow {
+    margin: 0;
+    color: var(--focus-accent);
+    font-size: 0.6875rem;
+    font-weight: 760;
+    letter-spacing: 0.14em;
   }
 }
 
-.stat2 {
-  @extend .stat;
-  @apply py-4 flex-1;
-  width: unset;
+.focus-old-host {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--focus-warning);
+  border-radius: var(--focus-radius-sm);
+  color: var(--focus-warning);
+  background: var(--focus-warning-soft);
+}
 
-  .num {
-    @apply text-2xl break-keep;
+.focus-text-action {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0 0.5rem;
+  border: 0;
+  color: var(--focus-accent);
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.focus-task {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(24rem, 0.95fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--focus-border);
+  border-radius: var(--focus-radius-lg);
+  background: var(--focus-surface);
+  box-shadow: var(--focus-shadow-sm);
+
+  &__context {
+    min-width: 0;
+    display: flex;
+    gap: 1rem;
+  }
+
+  &__book-icon {
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 0.875rem;
+    color: var(--focus-accent);
+    background: var(--focus-accent-soft);
+
+    svg {
+      width: 1.375rem;
+      height: 1.375rem;
+    }
+  }
+
+  &__copy {
+    min-width: 0;
+    flex: 1;
+  }
+
+  &__label {
+    margin: 0;
+    color: var(--focus-ink-tertiary);
+    font-size: 0.75rem;
+    font-weight: 720;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    display: block;
+    max-width: 100%;
+    margin-top: 0.25rem;
+    padding: 0;
+    border: 0;
+    color: var(--focus-ink);
+    background: transparent;
+    font: inherit;
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 740;
+    letter-spacing: -0.035em;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &__meta {
+    margin: 0.5rem 0 0;
+    color: var(--focus-ink-secondary);
+    font-size: 0.875rem;
+  }
+
+  &__progress {
+    margin-top: 2rem;
+
+    > div:last-child {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 0.625rem;
+      color: var(--focus-ink-secondary);
+      font-size: 0.8125rem;
+    }
+  }
+
+  &__plan {
+    padding-left: clamp(1.5rem, 4vw, 3rem);
+    border-left: 1px solid var(--focus-border);
+  }
+
+  &__plan-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__goal {
+    margin: 0.25rem 0 0;
+    color: var(--focus-ink-secondary);
+
+    strong {
+      color: var(--focus-ink);
+      font-size: 1.25rem;
+    }
+  }
+
+  &__counts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 1.5rem;
+    border-block: 1px solid var(--focus-border);
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+      padding: 1rem 0;
+
+      & + div {
+        padding-left: 1.5rem;
+        border-left: 1px solid var(--focus-border);
+      }
+    }
+
+    strong {
+      color: var(--focus-ink);
+      font-size: 2rem;
+      font-weight: 720;
+      letter-spacing: -0.04em;
+    }
+
+    span {
+      color: var(--focus-ink-secondary);
+      font-size: 0.8125rem;
+    }
+  }
+
+  &__random-review {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.625rem;
+    margin-top: 0.75rem;
+    color: var(--focus-ink-secondary);
+    font-size: 0.8125rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  &__primary {
+    min-width: 0;
+    flex: 1;
+
+    :deep(.base-button) {
+      width: 100%;
+    }
+  }
+
+  &__empty-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}
+
+.focus-button-label,
+.focus-inline-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.focus-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  align-items: center;
+  margin-top: 1.25rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--focus-border);
+
+  &__metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  &__calendar {
+    padding-left: 2rem;
+    border-left: 1px solid var(--focus-border);
+  }
+}
+
+.focus-metric {
+  min-width: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.25rem;
+  padding: 0.5rem 1.5rem;
+
+  &:first-child {
+    padding-left: 0;
+  }
+
+  & + & {
+    border-left: 1px solid var(--focus-border);
+  }
+
+  span {
+    color: var(--focus-ink-secondary);
+    font-size: 0.8125rem;
+  }
+
+  strong {
+    color: var(--focus-ink);
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+  }
+}
+
+.focus-library {
+  margin-top: 3rem;
+
+  &--quiet {
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--focus-border);
+  }
+}
+
+.focus-section-head {
+  h2 {
+    margin: 0.125rem 0 0;
+    color: var(--focus-ink);
+    font-size: 1.5rem;
+    font-weight: 720;
+    letter-spacing: -0.03em;
+  }
+}
+
+.focus-section-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.focus-book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--book-width), 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+
+  :deep(> div) {
+    width: 100% !important;
+  }
+
+  :deep(.book) {
+    width: 100% !important;
+  }
+
+  &--recommend {
+    max-height: 31rem;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 1024px) {
+  .focus-task {
+    grid-template-columns: 1fr;
+
+    &__plan {
+      padding-top: 1.5rem;
+      padding-left: 0;
+      border-top: 1px solid var(--focus-border);
+      border-left: 0;
+    }
+  }
+
+  .focus-overview {
+    grid-template-columns: 1fr;
+
+    &__calendar {
+      padding-top: 1.25rem;
+      padding-left: 0;
+      border-top: 1px solid var(--focus-border);
+      border-left: 0;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .focus-dashboard {
+    &__header {
+      align-items: flex-start;
+
+      h1 {
+        font-size: 2.25rem;
+      }
+
+      p:last-child {
+        max-width: 18rem;
+      }
+    }
+  }
+
+  .focus-task {
+    padding: 1.25rem;
+
+    &__context {
+      flex-direction: column;
+    }
+
+    &__book-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    &__actions {
+      flex-direction: column;
+    }
+
+    &__empty-action {
+      justify-content: flex-start;
+    }
+  }
+
+  .focus-overview__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .focus-metric {
+    padding: 0.75rem 0;
+
+    & + & {
+      border-top: 1px solid var(--focus-border);
+      border-left: 0;
+    }
+  }
+
+  .focus-section-head {
+    align-items: flex-start !important;
+  }
+
+  .focus-section-actions {
+    max-width: 11rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .focus-book-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

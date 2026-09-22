@@ -164,7 +164,7 @@ const showSkipStep = computed(() => flowDisplay.value.showSkipStep)
   flex-shrink: 0;
   width: var(--toolbar-width);
   position: relative;
-  z-index: 20; // 提高z-index确保在最上方
+  z-index: 20;
 
   &.hide {
     margin-bottom: -6rem;
@@ -176,19 +176,55 @@ const showSkipStep = computed(() => flowDisplay.value.showSkipStep)
   }
 
   .bottom {
-    @apply relative w-full box-border rounded-xl bg-second shadow-lg z-10 mb-3;
-    padding: 0.2rem var(--space) calc(0.4rem + env(safe-area-inset-bottom, 0px)) var(--space);
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0.75rem;
+    padding: 0.875rem 1rem calc(0.875rem + env(safe-area-inset-bottom, 0px));
+    border: 1px solid var(--focus-border);
+    border-radius: 1.125rem;
+    background: color-mix(in srgb, var(--focus-surface) 94%, transparent);
+    box-shadow: var(--focus-shadow-md);
+    backdrop-filter: blur(18px);
 
     .stat {
-      @apply flex justify-around gap-[var(--stat-gap)] mt-1;
+      display: flex;
+      justify-content: flex-start;
+      gap: 0;
+      margin-top: 0.625rem;
 
       .row {
-        @apply flex flex-col items-center gap-1 text-gray;
+        min-width: 5.25rem;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.125rem;
+        padding: 0 1rem;
+        color: var(--focus-ink-secondary);
+        font-size: 0.8125rem;
+
+        &:first-child {
+          padding-left: 0;
+        }
+
+        & + .row {
+          border-left: 1px solid var(--focus-border);
+        }
 
         .line {
-          height: 1px;
-          width: 100%;
-          background: var(--color-sub-gray);
+          display: none;
+        }
+
+        .num,
+        > div:first-child {
+          color: var(--focus-ink);
+          font-weight: 680;
+        }
+
+        .name {
+          color: var(--focus-ink-tertiary);
+          font-size: 0.6875rem;
         }
       }
     }
@@ -201,23 +237,23 @@ const showSkipStep = computed(() => flowDisplay.value.showSkipStep)
     box-sizing: border-box;
     position: fixed;
     bottom: 1rem;
-    z-index: 1; // 确保进度条也在最上方
+    z-index: 1;
   }
 
   .arrow {
     position: absolute;
-    top: -40%;
+    top: -2.5rem;
     left: 50%;
     cursor: pointer;
     transition:
-      top 0.5s ease,
-      transform 0.5s ease;
+      top var(--focus-duration) var(--focus-ease),
+      transform var(--focus-duration) var(--focus-ease);
     transform: rotate(-90deg);
     padding: 0.5rem;
     font-size: 1.2rem;
 
     &.down {
-      top: -90%;
+      top: -3.25rem;
       transform: rotate(90deg);
     }
   }
@@ -228,18 +264,19 @@ const showSkipStep = computed(() => flowDisplay.value.showSkipStep)
     width: 100%;
 
     .bottom {
-      padding: 0.3rem 0.5rem 0.5rem 0.5rem;
-      border-radius: 0.4rem;
+      padding: 0.75rem 0.75rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+      border-radius: 1rem;
 
       .stat {
-        margin-top: 0.3rem;
-        gap: 0.2rem;
+        margin-top: 0.5rem;
+        gap: 0;
         flex-direction: row;
         overflow-x: auto;
 
         .row {
-          min-width: 3.5rem;
-          gap: 0.2rem;
+          min-width: 4rem;
+          gap: 0.125rem;
+          padding-inline: 0.625rem;
 
           .num {
             font-size: 0.8rem;
@@ -252,15 +289,14 @@ const showSkipStep = computed(() => flowDisplay.value.showSkipStep)
         }
       }
 
-      // 移动端按钮组调整 - 改为网格布局
       .flex.gap-2 {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
+        grid-template-columns: repeat(5, 2.5rem);
+        gap: 0.25rem;
         justify-content: center;
 
         .base-icon {
-          padding: 0.3rem;
+          padding: 0;
           font-size: 1rem;
           min-height: 44px;
           min-width: 44px;
@@ -288,14 +324,14 @@ const showSkipStep = computed(() => flowDisplay.value.showSkipStep)
 @media (max-width: 480px) {
   .footer {
     .bottom {
-      padding: 0.2rem 0.3rem 0.3rem 0.3rem;
+      padding: 0.625rem;
 
       .stat {
-        margin-top: 0.2rem;
-        gap: 0.1rem;
+        margin-top: 0.375rem;
+        gap: 0;
 
         .row {
-          min-width: 3rem;
+          min-width: 3.5rem;
           gap: 0.1rem;
 
           .num {

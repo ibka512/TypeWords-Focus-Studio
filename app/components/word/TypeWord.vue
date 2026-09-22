@@ -314,9 +314,9 @@ useEvents([
 
 <template>
   <div class="typing-word" v-if="word.word.length">
-    <div class="flex flex-col items-center">
+    <div class="typing-word__surface flex flex-col items-center">
       <!-- 音标 + 发音按钮（通过 slot 传入 VolumeIcon） -->
-      <div class="flex gap-1 mt-10 md:mt-30">
+      <div class="typing-word__phonetic flex gap-1">
         <div
           class="phonetic"
           :class="effective.isWordMasked && 'word-shadow'"
@@ -365,7 +365,7 @@ useEvents([
       </Tooltip>
 
       <!-- 操作按钮行 -->
-      <div class="mt-1 flex gap-4">
+      <div class="typing-word__actions">
         <BaseIcon
           @click="emit('toggleSimple')"
           :title="
@@ -475,19 +475,48 @@ useEvents([
   flex: 1;
   word-break: break-word;
   position: relative;
-  color: var(--color-font-2);
+  color: var(--focus-ink);
+
+  &__surface {
+    min-height: calc(100vh - 12rem);
+    box-sizing: border-box;
+    padding: clamp(2rem, 7vh, 5rem) clamp(1rem, 5vw, 4.5rem) 3rem;
+    border: 1px solid var(--focus-border);
+    border-radius: var(--focus-radius-lg);
+    background: color-mix(in srgb, var(--focus-surface) 96%, transparent);
+    box-shadow: var(--focus-shadow-sm);
+  }
+
+  &__phonetic {
+    min-height: 2.5rem;
+    align-items: center;
+    color: var(--focus-ink-secondary);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.75rem;
+    padding: 0.375rem;
+    border: 1px solid var(--focus-border);
+    border-radius: 0.875rem;
+    background: var(--focus-surface-raised);
+  }
 
   .phonetic {
-    color: var(--color-font-1);
+    color: var(--focus-ink-secondary);
     font-family: var(--word-font-family);
     font-size: 1.2rem;
   }
 
   .word {
+    margin-block: 0.75rem 0.5rem;
     font-size: 3rem;
-    line-height: 1;
+    line-height: 1.15;
     font-family: var(--en-article-family);
-    letter-spacing: 0.3rem;
+    letter-spacing: 0.18em;
+    color: var(--focus-ink);
   }
 
   .is-wrong {
@@ -496,11 +525,11 @@ useEvents([
 
   .input,
   .right {
-    color: rgb(22, 163, 74);
+    color: var(--focus-success);
   }
 
   .wrong {
-    color: rgba(red, 0.6);
+    color: var(--focus-danger);
   }
 
   .label {
@@ -515,6 +544,18 @@ useEvents([
 
 @media (max-width: 768px) {
   .typing-word {
+    &__surface {
+      min-height: calc(100vh - 10rem);
+      padding: 3.5rem 1rem 2rem;
+      border-radius: 1.25rem;
+    }
+
+    &__actions {
+      max-width: 100%;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
     .label {
       @apply w-unset mr-2;
     }

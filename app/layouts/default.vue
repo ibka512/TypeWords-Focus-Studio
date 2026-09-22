@@ -7,7 +7,7 @@ import { useRuntimeStore } from '@/core/stores/runtime.ts'
 import { useSettingStore } from '@/core/stores/setting.ts'
 import { ShortcutKey } from '@/core/types/enum.ts'
 import { onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { useInit } from '@/core/composables/useInit.ts'
 import { useI18n } from 'vue-i18n'
@@ -15,22 +15,30 @@ import { Supabase } from '@/core/utils/supabase.ts'
 import MiniProgram from '@/components/MiniProgram.vue'
 import WordCollectPopover from '@/components/word/WordCollectPopover.vue'
 
-const router = useRouter()
 const { toggleTheme, getTheme, setTheme } = useTheme()
 const runtimeStore = useRuntimeStore()
 const settingStore = useSettingStore()
-let expand = $ref(false)
 const init = useInit()
+const route = useRoute()
+const { locales, setLocale } = useI18n()
 
-function toggleExpand(n: boolean) {
-  expand = n
-  document.documentElement.style.setProperty('--aside-width', n ? '14rem' : '4.5rem')
+let expand = $ref(true)
+let localeOpen = $ref(false)
+
+function toggleExpand(value: boolean) {
+  expand = value
+  document.documentElement.style.setProperty('--aside-width', value ? '15rem' : '5rem')
+}
+
+function togglePinnedNavigation() {
+  settingStore.sideExpand = !settingStore.sideExpand
+  toggleExpand(settingStore.sideExpand)
 }
 
 watch(
   () => settingStore.load,
-  n => {
-    if (!n) return
+  loaded => {
+    if (!loaded) return
     toggleExpand(settingStore.sideExpand)
     setTheme(settingStore.theme)
   }
@@ -38,16 +46,28 @@ watch(
 
 watch(
   () => settingStore.theme,
-  n => {
-    setTheme(n)
-  }
+  theme => setTheme(theme)
 )
 
-const { locales, setLocale } = useI18n()
-const route = useRoute()
+watch(
+  () => route.fullPath,
+  () => (localeOpen = false)
+)
 
-const showIcon = $computed(() => {
-  return ['/words', '/articles', '/setting', '/help', '/doc', '/feedback'].includes(route.path)
+const showUtilities = $computed(() =>
+  ['/words', '/articles', '/setting', '/help', '/doc', '/feedback'].includes(route.path)
+)
+
+const immersive = $computed(() =>
+  ['/practice-words/', '/practice-articles/', '/words-test/'].some(prefix => route.path.includes(prefix))
+)
+
+const currentSection = $computed(() => {
+  if (route.path.includes('article') || route.path.includes('book')) return '文章学习'
+  if (route.path.includes('setting')) return '偏好设置'
+  if (route.path.includes('help') || route.path.includes('doc')) return '帮助与资料'
+  if (route.path.includes('feedback')) return '反馈'
+  return '单词训练'
 })
 
 onMounted(() => {
@@ -56,101 +76,117 @@ onMounted(() => {
 })
 
 function onMouseEnter() {
-  !settingStore.sideExpand && toggleExpand(true)
+  if (!settingStore.sideExpand) toggleExpand(true)
 }
 
 function onMouseLeave() {
-  !settingStore.sideExpand && toggleExpand(false)
+  if (!settingStore.sideExpand) toggleExpand(false)
 }
 </script>
 
 <template>
-  <div class="layout anim">
-    <!--    第一个aside 占位用-->
-    <div class="aside space"></div>
-    <div class="aside fixed" :class="!expand && 'hidden-span'" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-      <div class="top p-4">
-        <div v-if="expand" class="flex justify-between">
-          <Logo />
+  <div class="focus-layout" :class="{ 'is-immersive': immersive }">
+    <aside
+      class="focus-sidebar"
+      :class="{ 'is-collapsed': !expand }"
+      @mouseenter="onMouseEnter"
+      @mouseleave="onMouseLeave"
+    >
+      <div class="focus-sidebar__top">
+        <div class="focus-brand">
+          <Logo class="focus-brand__logo" />
           <BaseIcon
-            class="transform-scale-80 border border-1 border-solid border-gray"
-            @click="settingStore.sideExpand = !settingStore.sideExpand"
+            class="focus-sidebar__pin"
+            :title="settingStore.sideExpand ? '收起侧边栏' : '固定侧边栏'"
+            @click="togglePinnedNavigation"
           >
-            <IconFluentPin24Filled
-              v-if="settingStore.sideExpand"
-              class="flex-shrink-0 -transform-rotate-45 color-gray"
-            />
-            <IconFluentPin20Regular v-else class="flex-shrink-0 -transform-rotate-45" />
+            <IconFluentPin24Filled v-if="settingStore.sideExpand" />
+            <IconFluentPin20Regular v-else />
           </BaseIcon>
         </div>
-        <NuxtLink to="/words" class="row">
-          <IconFluentTextUnderlineDouble20Regular />
-          <span>{{ $t('words') }}</span>
-        </NuxtLink>
-        <NuxtLink id="article" to="/articles" class="row">
-          <IconFluentBookLetter20Regular />
-          <span>{{ $t('articles') }}</span>
-        </NuxtLink>
-        <NuxtLink to="/feedback" class="row">
-          <IconFluentCommentEdit20Regular />
-          <span>{{ $t('feedback') }}</span>
-        </NuxtLink>
-        <NuxtLink to="/doc" class="row">
-          <IconFluentDocument20Regular />
-          <span>{{ $t('document') }}</span>
-        </NuxtLink>
-        <NuxtLink to="/help" class="row">
-          <IconFluentQuestionCircle20Regular />
-          <span>{{ $t('help') }}</span>
-        </NuxtLink>
-        <!--        <div class="row" @click="router.push('/user')">-->
-        <!--          <IconFluentPerson20Regular/>-->
-        <!--          <span >用户</span>-->
-        <!--        </div>-->
+
+        <p v-if="expand" class="focus-sidebar__label">学习空间</p>
+        <nav class="focus-nav" aria-label="主要导航">
+          <NuxtLink to="/words" class="focus-nav__item">
+            <IconFluentTextUnderlineDouble20Regular />
+            <span>{{ $t('words') }}</span>
+          </NuxtLink>
+          <NuxtLink id="article" to="/articles" class="focus-nav__item">
+            <IconFluentBookLetter20Regular />
+            <span>{{ $t('articles') }}</span>
+          </NuxtLink>
+        </nav>
+
+        <p v-if="expand" class="focus-sidebar__label focus-sidebar__label--secondary">资源</p>
+        <nav class="focus-nav" aria-label="帮助导航">
+          <NuxtLink to="/doc" class="focus-nav__item">
+            <IconFluentDocument20Regular />
+            <span>{{ $t('document') }}</span>
+          </NuxtLink>
+          <NuxtLink to="/help" class="focus-nav__item">
+            <IconFluentQuestionCircle20Regular />
+            <span>{{ $t('help') }}</span>
+          </NuxtLink>
+          <NuxtLink to="/feedback" class="focus-nav__item">
+            <IconFluentCommentEdit20Regular />
+            <span>{{ $t('feedback') }}</span>
+          </NuxtLink>
+        </nav>
       </div>
-      <div class="px-4 pb-2 border-0 border-t-1 border-solid border-[var(--color-line)]">
-        <NuxtLink to="/setting" class="row">
+
+      <div class="focus-sidebar__bottom">
+        <NuxtLink to="/setting" class="focus-nav__item">
           <IconFluentSettings20Regular />
           <span>{{ $t('setting') }}</span>
-          <div class="red-point" :class="!settingStore.sideExpand && 'top-1 right-0'" v-if="runtimeStore.isError"></div>
+          <span v-if="runtimeStore.isError" class="focus-status-dot" aria-label="同步异常"></span>
         </NuxtLink>
+        <p v-if="expand" class="focus-sidebar__hint">所有学习数据优先保存在本地</p>
       </div>
-    </div>
+    </aside>
 
-    <!-- 移动端顶部菜单栏 -->
-    <div class="mobile-top-nav" :class="{ collapsed: settingStore.mobileNavCollapsed }">
-      <div class="nav-items">
-        <div class="nav-item" @click="router.push('/')" :class="{ active: route.path === '/' }">
-          <IconFluentHome20Regular />
-          <span>{{ $t('home_page') }}</span>
+    <div class="focus-workspace">
+      <header v-if="showUtilities" class="focus-topbar">
+        <div>
+          <p class="focus-topbar__eyebrow">FOCUS STUDIO</p>
+          <p class="focus-topbar__title">{{ currentSection }}</p>
         </div>
-        <div class="nav-item" @click="router.push('/words')" :class="{ active: route.path?.includes('/words') }">
-          <IconFluentTextUnderlineDouble20Regular />
-          <span>{{ $t('words') }}</span>
-        </div>
-        <div class="nav-item" @click="router.push('/articles')" :class="{ active: route.path?.includes('/articles') }">
-          <IconFluentBookLetter20Regular />
-          <span>{{ $t('articles') }}</span>
-        </div>
-        <div class="nav-item" @click="router.push('/setting')" :class="{ active: route.path === '/setting' }">
-          <IconFluentSettings20Regular />
-          <span>{{ $t('setting') }}</span>
-          <div class="red-point" v-if="runtimeStore.isError"></div>
-        </div>
-      </div>
-      <div class="nav-toggle" @click="settingStore.mobileNavCollapsed = !settingStore.mobileNavCollapsed">
-        <IconFluentChevronDown20Filled v-if="!settingStore.mobileNavCollapsed" />
-        <IconFluentChevronUp20Filled v-else />
-      </div>
-    </div>
+        <div class="focus-topbar__actions">
+          <MiniProgram v-if="settingStore.load && !settingStore.first" />
 
-    <IeDialog />
+          <div class="focus-locale">
+            <BaseIcon title="切换语言" :active="localeOpen" @click="localeOpen = !localeOpen">
+              <IconPhTranslate />
+            </BaseIcon>
+            <div v-if="localeOpen" class="focus-locale__menu" role="menu">
+              <button
+                v-for="locale in locales"
+                :key="locale.code"
+                type="button"
+                role="menuitem"
+                @click="setLocale(locale.code); localeOpen = false"
+              >
+                {{ locale.name }}
+              </button>
+            </div>
+          </div>
 
-    <div class="flex-1 z-1 relative main-content overflow-x-hidden">
+          <BaseIcon
+            :title="`${$t('toggle_theme')}(${settingStore.shortcutKeyMap[ShortcutKey.ToggleTheme]})`"
+            @click="toggleTheme"
+          >
+            <IconFluentWeatherMoon16Regular v-if="getTheme() === 'light'" />
+            <IconFluentWeatherSunny16Regular v-else />
+          </BaseIcon>
+        </div>
+      </header>
+
       <div
-        class="mt-3 center relative z-9999 pointer-events-none"
-        @click="router.push('/setting?index=6 ')"
         v-if="runtimeStore.isError"
+        class="focus-sync-error"
+        role="button"
+        tabindex="0"
+        @click="navigateTo('/setting?index=6')"
+        @keydown.enter="navigateTo('/setting?index=6')"
       >
         <ToastComponent
           type="error"
@@ -160,208 +196,344 @@ function onMouseLeave() {
           :message="$t('sync_failed_toast')"
         />
       </div>
-      <!--      <slot></slot>-->
-      <router-view></router-view>
 
-      <div class="absolute right-4 top-4 flex z-1 gap-2" v-if="showIcon">
-        <MiniProgram v-if="settingStore.load && !settingStore.first" />
-
-        <div class="relative group">
-          <BaseIcon>
-            <IconPhTranslate />
-          </BaseIcon>
-          <div
-            class="space-y-2 pt-2 absolute z-2 right-0 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150 pointer-events-none group-hover:pointer-events-auto"
-          >
-            <div class="card mb-2 py-4 px-6 space-y-3">
-              <div v-for="locale in locales" @click="setLocale(locale.code)" class="w-full cp break-keep black-link">
-                {{ locale.name }}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <BaseIcon
-          :title="`${$t('toggle_theme')}(${settingStore.shortcutKeyMap[ShortcutKey.ToggleTheme]})`"
-          @click="toggleTheme"
-        >
-          <IconFluentWeatherMoon16Regular v-if="getTheme() === 'light'" />
-          <IconFluentWeatherSunny16Regular v-else />
-        </BaseIcon>
-      </div>
+      <main class="focus-main">
+        <router-view />
+      </main>
     </div>
+
+    <nav v-if="!immersive" class="focus-mobile-nav" aria-label="移动端主要导航">
+      <NuxtLink to="/words" class="focus-mobile-nav__item">
+        <IconFluentTextUnderlineDouble20Regular />
+        <span>{{ $t('words') }}</span>
+      </NuxtLink>
+      <NuxtLink to="/articles" class="focus-mobile-nav__item">
+        <IconFluentBookLetter20Regular />
+        <span>{{ $t('articles') }}</span>
+      </NuxtLink>
+      <NuxtLink to="/setting" class="focus-mobile-nav__item">
+        <IconFluentSettings20Regular />
+        <span>{{ $t('setting') }}</span>
+        <span v-if="runtimeStore.isError" class="focus-status-dot" aria-label="同步异常"></span>
+      </NuxtLink>
+    </nav>
+
+    <IeDialog />
     <WordCollectPopover />
   </div>
 </template>
 
 <style scoped lang="scss">
-.layout {
-  width: 100%;
-  height: 100%;
+.focus-layout {
+  min-height: 100vh;
   display: flex;
-  background: var(--color-primary);
+  background: var(--focus-canvas);
 }
 
-.aside {
-  background: var(--color-second);
-  height: 100vh;
-  box-sizing: border-box;
+.focus-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 30;
+  width: var(--aside-width);
+  min-width: var(--aside-width);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: rgb(0 0 0 / 3%) 0px 0px 12px 0px;
-  width: var(--aside-width);
-  transition: all 0.3s;
-  z-index: 2;
+  box-sizing: border-box;
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--focus-border);
+  background: color-mix(in srgb, var(--focus-surface) 92%, transparent);
+  backdrop-filter: blur(18px);
   overflow: hidden;
+  transition: width var(--focus-duration) var(--focus-ease);
 
-  &.hidden-span {
-    span {
+  &__top,
+  &__bottom {
+    min-width: 3rem;
+  }
+
+  &__bottom {
+    padding-top: 1rem;
+    border-top: 1px solid var(--focus-border);
+  }
+
+  &__pin {
+    flex: 0 0 auto;
+  }
+
+  &__label {
+    margin: 2rem 0 0.5rem 0.75rem;
+    color: var(--focus-ink-tertiary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  &__label--secondary {
+    margin-top: 1.5rem;
+  }
+
+  &__hint {
+    margin: 0.75rem 0.75rem 0;
+    color: var(--focus-ink-tertiary);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+
+  &.is-collapsed {
+    padding-inline: 1rem;
+
+    .focus-nav__item span,
+    .focus-sidebar__hint {
       opacity: 0;
     }
+
+    .focus-brand__logo {
+      width: 2.75rem;
+      overflow: hidden;
+
+      :deep(img) {
+        max-width: 2.75rem;
+        height: auto;
+        object-fit: contain;
+      }
+    }
   }
-  .row {
-    @apply cp rounded-md text p-2 my-2 flex items-center gap-2 relative shrink-0 hover:bg-fourth;
-    transition: all 0.5s;
-    color: var(--color-main-text);
+}
+
+.focus-brand {
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-inline: 0.25rem;
+
+}
+
+.focus-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+
+  &__item {
+    min-height: 2.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-sizing: border-box;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.75rem;
+    color: var(--focus-ink-secondary);
+    font-size: 0.9375rem;
+    font-weight: 580;
+    white-space: nowrap;
+    transition:
+      color var(--focus-duration) var(--focus-ease),
+      background-color var(--focus-duration) var(--focus-ease);
+
+    &:hover {
+      color: var(--focus-ink);
+      background: var(--focus-surface-strong);
+    }
 
     &.router-link-active {
-      background: var(--color-fourth);
+      color: var(--focus-accent);
+      background: var(--focus-accent-soft);
     }
 
     svg {
-      @apply shrink-0 text-lg;
+      width: 1.25rem;
+      height: 1.25rem;
+      flex: 0 0 auto;
     }
+
     span {
-      @apply shrink-0;
+      transition: opacity 120ms ease;
     }
   }
 }
 
-// 移动端顶部菜单栏
-.mobile-top-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: var(--color-second);
-  border-bottom: 1px solid var(--color-item-border);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  transition: all 0.3s ease;
+.focus-status-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: auto;
+  border: 2px solid var(--focus-surface);
+  border-radius: 50%;
+  background: var(--focus-danger);
+}
 
-  .nav-items {
+.focus-workspace {
+  width: calc(100% - var(--aside-width));
+  min-height: 100vh;
+  margin-left: var(--aside-width);
+  transition:
+    width var(--focus-duration) var(--focus-ease),
+    margin-left var(--focus-duration) var(--focus-ease);
+}
+
+.focus-topbar {
+  height: 4.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--focus-border);
+  background: color-mix(in srgb, var(--focus-canvas) 88%, transparent);
+  backdrop-filter: blur(16px);
+
+  &__eyebrow {
+    margin: 0;
+    color: var(--focus-ink-tertiary);
+    font-size: 0.625rem;
+    font-weight: 750;
+    letter-spacing: 0.16em;
+  }
+
+  &__title {
+    margin: 0.125rem 0 0;
+    color: var(--focus-ink);
+    font-size: 0.9375rem;
+    font-weight: 650;
+  }
+
+  &__actions {
     display: flex;
-    justify-content: space-around;
-    padding: 0.5rem 0;
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 0.5rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      min-height: 44px;
-      min-width: 44px;
-      justify-content: center;
-      position: relative;
-
-      svg {
-        font-size: 1.2rem;
-        margin-bottom: 0.2rem;
-        color: var(--color-main-text);
-      }
-
-      span {
-        font-size: 0.7rem;
-        color: var(--color-main-text);
-        text-align: center;
-      }
-
-      &.active {
-        svg,
-        span {
-          color: var(--color-select-bg);
-        }
-      }
-
-      &:active {
-        transform: scale(0.95);
-      }
-
-      .red-point {
-        position: absolute;
-        top: 0.2rem;
-        right: 0.2rem;
-        width: 0.4rem;
-        height: 0.4rem;
-        background: #ff4444;
-        border-radius: 50%;
-      }
-    }
+    align-items: center;
+    gap: 0.375rem;
   }
+}
 
-  .nav-toggle {
+.focus-locale {
+  position: relative;
+
+  &__menu {
     position: absolute;
-    bottom: -1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-second);
-    border: 1px solid var(--color-item-border);
-    border-top: none;
-    border-radius: 0 0 0.5rem 0.5rem;
-    padding: 0.3rem 0.8rem;
-    cursor: pointer;
-    transition: all 0.3s;
+    top: calc(100% + 0.625rem);
+    right: 0;
+    z-index: 50;
+    width: 12rem;
+    max-height: min(24rem, 70vh);
+    padding: 0.5rem;
+    border: 1px solid var(--focus-border);
+    border-radius: 0.875rem;
+    background: var(--focus-surface);
+    box-shadow: var(--focus-shadow-md);
+    overflow-y: auto;
 
-    svg {
-      font-size: 1rem;
-      color: var(--color-main-text);
-    }
+    button {
+      width: 100%;
+      min-height: 2.5rem;
+      padding: 0.5rem 0.75rem;
+      border: 0;
+      border-radius: 0.625rem;
+      color: var(--focus-ink);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
 
-    &:active {
-      transform: translateX(-50%) scale(0.95);
-    }
-  }
-
-  &.collapsed {
-    transform: translateY(calc(-100% + 1.5rem));
-
-    .nav-items {
-      opacity: 0;
-      pointer-events: none;
+      &:hover {
+        background: var(--focus-surface-strong);
+      }
     }
   }
 }
 
-.main-content {
-  // 移动端时为主内容区域添加顶部内边距，避免被顶部菜单遮挡
-  @media (max-width: 768px) {
-    padding-top: 4rem;
-  }
+.focus-main {
+  min-height: calc(100vh - 4.75rem);
 }
 
-// 移动端隐藏左侧菜单栏
-@media (max-width: 768px) {
-  .aside {
+.focus-sync-error {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  z-index: 100;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.focus-mobile-nav {
+  display: none;
+}
+
+.focus-layout.is-immersive {
+  .focus-sidebar {
     display: none;
   }
 
-  .aside.space {
-    display: none;
-  }
-
-  .main-content {
+  .focus-workspace {
     width: 100%;
     margin-left: 0;
   }
+
+  .focus-main {
+    min-height: 100vh;
+  }
 }
 
-// 桌面端隐藏移动端顶部菜单栏
-@media (min-width: 769px) {
-  .mobile-top-nav {
+@media (max-width: 768px) {
+  .focus-sidebar,
+  .focus-topbar {
     display: none;
+  }
+
+  .focus-workspace {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .focus-main {
+    min-height: 100vh;
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .focus-mobile-nav {
+    position: fixed;
+    right: 0.75rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    left: 0.75rem;
+    z-index: 80;
+    min-height: 4rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0.375rem;
+    border: 1px solid var(--focus-border);
+    border-radius: 1.25rem;
+    background: color-mix(in srgb, var(--focus-surface) 92%, transparent);
+    box-shadow: var(--focus-shadow-md);
+    backdrop-filter: blur(18px);
+
+    &__item {
+      position: relative;
+      min-height: 3.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.125rem;
+      border-radius: 0.875rem;
+      color: var(--focus-ink-secondary);
+      font-size: 0.6875rem;
+      font-weight: 650;
+
+      &.router-link-active {
+        color: var(--focus-accent);
+        background: var(--focus-accent-soft);
+      }
+
+      svg {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+
+      .focus-status-dot {
+        position: absolute;
+        top: 0.4rem;
+        right: calc(50% - 1.15rem);
+      }
+    }
   }
 }
 </style>

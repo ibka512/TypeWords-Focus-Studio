@@ -113,7 +113,7 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
   },
   // CSS
-  css: ['~/assets/css/main.scss'],
+  css: ['~/assets/css/main.scss', '~/assets/css/focus-studio.scss'],
   // 别名配置
   alias: {
     '@': resolve(__dirname, 'app'),

@@ -19,13 +19,20 @@ function goHome() {
 </script>
 
 <template>
-  <div class="center" @click="goHome">
-    <img v-show="settingStore.theme === 'dark'" :src="lightLogoSrc" alt="" />
-    <img v-show="settingStore.theme !== 'dark'" :src="darkLogoSrc" alt="" />
-  </div>
+  <button type="button" class="logo-button center" aria-label="返回首页" @click="goHome">
+    <img v-show="settingStore.theme === 'dark'" :src="lightLogoSrc" alt="Type Words" />
+    <img v-show="settingStore.theme !== 'dark'" :src="darkLogoSrc" alt="Type Words" />
+  </button>
 </template>
 
 <style scoped lang="scss">
+.logo-button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+
 img {
   cursor: pointer;
   height: 2rem;

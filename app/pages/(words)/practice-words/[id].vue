@@ -559,7 +559,7 @@ useEvents([
           @back="isQuickMarkWordList = false"
         />
 
-        <div class="mb-50 w-full" v-else>
+        <div class="focus-practice-stage" v-else>
           <PrevAndNextWord
             :data="data"
             :isWordMasked="effective.isWordMasked"
@@ -656,13 +656,23 @@ useEvents([
 }
 
 .practice-word {
-  @apply h-full flex flex-col justify-between items-center relative text-2xl;
+  @apply h-full flex flex-col justify-between items-center relative;
   width: var(--toolbar-width);
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 1rem 1.25rem 9rem;
+  font-size: 1rem;
+}
+
+.focus-practice-stage {
+  width: 100%;
 }
 
 @media (max-width: 768px) {
   .practice-word {
     width: 100%;
+    min-height: 100vh;
+    padding: 0.75rem 0 8.5rem;
 
     .absolute.z-1.top-4 {
       /* // 提高层级，确保不被遮挡*/

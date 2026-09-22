@@ -13,33 +13,42 @@ const emit = defineEmits(['click'])
 
 <template>
   <Tooltip :title="title">
-    <div
+    <button
+      type="button"
       v-bind="$attrs"
       @click="e => !disabled && emit('click', e)"
       class="icon-wrapper"
       :class="{ disabled, noBg, active }"
+      :disabled="disabled"
+      :aria-label="title"
     >
       <slot />
-    </div>
+    </button>
   </Tooltip>
 </template>
 
 <style scoped lang="scss">
-$w: 1.4rem;
+$w: 1.25rem;
 .icon-wrapper {
   cursor: pointer;
-  //padding: 2rem;
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 0.3rem;
+  border: 0;
+  border-radius: var(--focus-radius-sm);
+  color: var(--focus-ink-secondary);
   background: transparent;
-  transition: all 0.3s;
+  transition:
+    color var(--focus-duration) var(--focus-ease),
+    background-color var(--focus-duration) var(--focus-ease),
+    opacity var(--focus-duration) var(--focus-ease);
 
   &:hover:not(.disabled, .noBg) {
-    background: var(--color-fourth);
+    color: var(--focus-ink);
+    background: var(--focus-surface-strong);
   }
 
   &.disabled {
@@ -48,7 +57,8 @@ $w: 1.4rem;
   }
 
   &.active {
-    background: var(--color-fourth);
+    color: var(--focus-accent);
+    background: var(--focus-accent-soft);
   }
 
   :deep(svg) {

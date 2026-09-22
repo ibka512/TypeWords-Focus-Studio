@@ -276,12 +276,21 @@ defineExpose({ startPracticeSentence, playSentence })
 
 <style scoped lang="scss">
 .word-meta {
-  width: 100%;
+  width: min(100%, 48rem);
+  margin-top: 2rem;
+  color: var(--focus-ink-secondary);
+  font-size: 0.9375rem;
+  line-height: 1.7;
 
   .label {
     width: 7rem;
     padding-top: 0.2rem;
     flex-shrink: 0;
+    color: var(--focus-ink-tertiary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .sentence {
@@ -301,8 +310,8 @@ defineExpose({ startPracticeSentence, playSentence })
   }
 
   .sentence-highlight {
-    background: color-mix(in srgb, var(--color-link) 10%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-link) 25%, transparent);
+    background: var(--focus-accent-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--focus-accent) 28%, transparent);
   }
 }
 

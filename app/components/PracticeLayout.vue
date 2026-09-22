@@ -8,7 +8,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="flex justify-center relative" :class="!settingStore.showToolbar && 'footer-hide'">
+  <div class="focus-practice-layout" :class="!settingStore.showToolbar && 'footer-hide'">
     <div class="wrap" id="PracticeArea">
       <slot name="practice"></slot>
     </div>
@@ -27,7 +27,18 @@ defineProps<{
 </template>
 
 <style scoped lang="scss">
+.focus-practice-layout {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  background:
+    radial-gradient(circle at 50% -20%, color-mix(in srgb, var(--focus-accent) 9%, transparent), transparent 38rem),
+    var(--focus-canvas);
+}
+
 .wrap {
+  width: min(100%, 68rem);
   transition: all var(--anim-time);
 }
 
@@ -41,14 +52,14 @@ defineProps<{
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom, 0px));
   transition: all var(--anim-time);
-  z-index: 999;
+  z-index: 20;
 }
 
 .panel-wrap {
   position: fixed;
-  top: 0.8rem;
+  top: 1rem;
   z-index: 1;
-  height: calc(100vh - 1.8rem);
+  height: calc(100vh - 2rem);
 }
 
 @media (max-width: 1439px) {
@@ -80,9 +91,9 @@ defineProps<{
 
 @media (max-width: 768px) {
   .wrap {
-    height: calc(100vh - 6rem);
+    min-height: calc(100vh - 6rem);
     width: 100vw;
-    padding: 0 1rem;
+    padding: 0 0.75rem;
     box-sizing: border-box;
   }
 
@@ -97,9 +108,9 @@ defineProps<{
   }
 
   .footer-wrap {
-    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
-    left: 0.5rem;
-    right: 0.5rem;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    left: 0.75rem;
+    right: 0.75rem;
     width: auto;
   }
 }
