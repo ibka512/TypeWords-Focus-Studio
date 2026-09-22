@@ -29,6 +29,8 @@ This repository is a UI-focused edition of [zyronon/TypeWords](https://github.co
 
 本仓库是基于 [zyronon/TypeWords](https://github.com/zyronon/TypeWords) 制作的“专注学习舱”界面版本。它保留原项目的学习算法、本地数据结构、路由与 GPL-3.0 许可证，主要重新设计了单词训练、文章阅读、设置、移动端导航和深色模式体验。
 
+Focus Studio demo / 专注学习舱在线版：<https://ibka512.github.io/TypeWords-Focus-Studio/>
+
 Design decisions and protected compatibility contracts are documented in [`brand-spec.md`](./brand-spec.md) and [`design-system/typewords-focus-studio/MASTER.md`](./design-system/typewords-focus-studio/MASTER.md).
 
 ## Project Introduction

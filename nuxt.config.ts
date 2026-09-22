@@ -58,7 +58,7 @@ export default defineNuxtConfig({
       htmlAttrs: {
         lang: 'zh-CN',
       },
-      link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+      link: [{ rel: 'icon', type: 'image/x-icon', href: withBaseURL('/favicon.ico', appBaseURL) }],
     },
   },
   // ssr: false,
