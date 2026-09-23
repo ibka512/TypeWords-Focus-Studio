@@ -57,8 +57,11 @@ watch(
 
 const appBasePath = String(runtimeConfig.app.baseURL || '/').replace(/\/$/, '')
 const logicalRoutePath = $computed(() => {
-  if (!appBasePath || appBasePath === '/' || !route.path.startsWith(appBasePath)) return route.path
-  return route.path.slice(appBasePath.length) || '/'
+  const strippedPath =
+    !appBasePath || appBasePath === '/' || !route.path.startsWith(appBasePath)
+      ? route.path
+      : route.path.slice(appBasePath.length) || '/'
+  return strippedPath === '/' ? strippedPath : strippedPath.replace(/\/+$/, '')
 })
 
 const showUtilities = $computed(() =>
