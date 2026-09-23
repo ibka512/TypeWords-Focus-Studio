@@ -2,8 +2,13 @@
 const route = useRoute()
 const runtimeConfig = useRuntimeConfig()
 const siteOrigin = String(runtimeConfig.public.origin || 'https://typewords.cc').replace(/\/$/, '')
+const appBasePath = String(runtimeConfig.app.baseURL || '/').replace(/\/$/, '')
 
 const canonicalURL = $computed(() => new URL(route.path, `${siteOrigin}/`).toString())
+const logicalRoutePath = $computed(() => {
+  if (!appBasePath || appBasePath === '/' || !route.path.startsWith(appBasePath)) return route.path
+  return route.path.slice(appBasePath.length) || '/'
+})
 
 const nonIndexableRoutePrefixes = [
   '/fsrs',
@@ -21,7 +26,7 @@ const robotsContent = $computed(() => {
   const hostname = import.meta.client ? window.location.hostname : new URL(`${siteOrigin}/`).hostname
   const isDevelopmentHost = ['dev.typewords.cc', 'localhost', '127.0.0.1'].includes(hostname)
   const isFunctionalPage = nonIndexableRoutePrefixes.some(prefix =>
-    route.path === prefix || route.path.startsWith(`${prefix}/`)
+    logicalRoutePath === prefix || logicalRoutePath.startsWith(`${prefix}/`)
   )
 
   return isDevelopmentHost || isFunctionalPage

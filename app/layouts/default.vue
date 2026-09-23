@@ -18,6 +18,7 @@ import WordCollectPopover from '@/components/word/WordCollectPopover.vue'
 const { toggleTheme, getTheme, setTheme } = useTheme()
 const runtimeStore = useRuntimeStore()
 const settingStore = useSettingStore()
+const runtimeConfig = useRuntimeConfig()
 const init = useInit()
 const route = useRoute()
 const { locales, setLocale } = useI18n()
@@ -54,19 +55,25 @@ watch(
   () => (localeOpen = false)
 )
 
+const appBasePath = String(runtimeConfig.app.baseURL || '/').replace(/\/$/, '')
+const logicalRoutePath = $computed(() => {
+  if (!appBasePath || appBasePath === '/' || !route.path.startsWith(appBasePath)) return route.path
+  return route.path.slice(appBasePath.length) || '/'
+})
+
 const showUtilities = $computed(() =>
-  ['/words', '/articles', '/setting', '/help', '/doc', '/feedback'].includes(route.path)
+  ['/words', '/articles', '/setting', '/help', '/doc', '/feedback'].includes(logicalRoutePath)
 )
 
 const immersive = $computed(() =>
-  ['/practice-words/', '/practice-articles/', '/words-test/'].some(prefix => route.path.includes(prefix))
+  ['/practice-words/', '/practice-articles/', '/words-test/'].some(prefix => logicalRoutePath.includes(prefix))
 )
 
 const currentSection = $computed(() => {
-  if (route.path.includes('article') || route.path.includes('book')) return '文章学习'
-  if (route.path.includes('setting')) return '偏好设置'
-  if (route.path.includes('help') || route.path.includes('doc')) return '帮助与资料'
-  if (route.path.includes('feedback')) return '反馈'
+  if (logicalRoutePath.includes('article') || logicalRoutePath.includes('book')) return '文章学习'
+  if (logicalRoutePath.includes('setting')) return '偏好设置'
+  if (logicalRoutePath.includes('help') || logicalRoutePath.includes('doc')) return '帮助与资料'
+  if (logicalRoutePath.includes('feedback')) return '反馈'
   return '单词训练'
 })
 
